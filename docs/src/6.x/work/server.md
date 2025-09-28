@@ -93,6 +93,30 @@ $server->handleUserTagUpdated(function($message, \Closure $next) {
 });
 ```
 
+### 智能机器人事件
+因智能机器人消息变更为JSON格式，需要在获取 `server` 对象时指定消息格式为json：
+```php
+// 指定消息格式 JSON
+$server = $app->getServer(messageType: 'json');
+
+// 获取解密后的机器人消息
+$message = $server->getDecryptedMessage();
+
+// 回复消息
+$server->with(function($message, \Closure $next) {
+    return [
+        'msgtype' => 'stream',
+        'stream' => [
+            'id' => 'id00001',
+            'finish' => true,
+            'content' => '信息已收到',
+        ],
+    ];
+});
+```
+
+回复消息具体格式请参考官方文档：[企业微信智能机器人文档](https://developer.work.weixin.qq.com/document/path/101039)
+
 ## 其它事件处理
 
 以上便捷方法都只处理了特定事件，其它状态，可以通过自定义事件处理中间件的形式处理：
@@ -118,6 +142,6 @@ $message = $server->getRequestMessage(); // 原始消息
 $message = $server->getDecryptedMessage();
 ```
 
-`$message` 为一个 `EasyWeChat\OpenWork\Message` 实例。
+`$message` 为一个 `EasyWeChat\Work\Message` 实例。
 
 你可以在处理完逻辑后自行创建一个响应，当然，在不同的框架里，响应写法也不一样，请自行实现。

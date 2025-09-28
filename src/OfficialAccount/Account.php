@@ -14,13 +14,17 @@ class Account implements AccountInterface
         protected ?string $secret,
         protected ?string $token = null,
         protected ?string $aesKey = null
-    ) {}
+    ) {
+    }
 
     public function getAppId(): string
     {
         return $this->appId;
     }
 
+    /**
+     * @throws RuntimeException
+     */
     public function getSecret(): string
     {
         if ($this->secret === null) {

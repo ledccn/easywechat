@@ -1,8 +1,13 @@
+---
+aside: false
+title: 微信公众号使用代码示例
+---
+
 # 示例
 
 > 👏🏻 欢迎点击本页下方 "帮助我们改善此页面！" 链接参与贡献更多的使用示例！
 
-<details>
+<details open>
     <summary>webman 服务端验证消息</summary>
 
 ```php
@@ -33,16 +38,65 @@ class OfficialAccount
         $server = $app->getServer();
         $response = $server->serve();
 
-        return response($response->getBody());
+        return response($response->getBody()->getContents(), $response->getStatusCode(), $response->getHeaders());
     }
 }
 ```
 
 </details>
 
-<!--
-<details>
-    <summary>标题</summary>
-内容
+
+<details open>
+    <summary>Hyperf 服务端验证消息</summary>
+  
+  ##### 方法一：
+  * 安装包: `composer require limingxinleo/easywechat-classmap`
+  * 在授权回调地址中使用：
+
+```php
+<?php
+
+namespace App\Controller;
+
+use EasyWeChat\OfficialAccount\Application;
+use Hyperf\HttpServer\Contract\RequestInterface;
+use Hyperf\HttpServer\Contract\ResponseInterface;
+use Psr\SimpleCache\CacheInterface;
+use Hyperf\Context\ApplicationContext;
+
+// 授权事件回调地址：http://easywechat.com/OfficialAccount/server
+
+class OfficialAccountController
+{
+    public function server(RequestInterface $request, ResponseInterface $response)
+    {
+        $app = new Application(config('wechat.defaults'));
+        
+        if (method_exists($app, 'setRequest')) {
+            $app->setRequest($request);  //必须替换服务端请求
+        }
+
+        if (method_exists($app, 'setCache')) {
+            $app->setCache(ApplicationContext::getContainer()->get(CacheInterface::class));  //可选，根据实际需求替换缓存
+        }
+
+        $server = $app->getServer();
+        
+        $server->with(function ($message, \Closure $next) {
+            return '谢谢关注！';
+            
+            // 你的自定义逻辑
+            // return $next($message);
+        });
+        
+        return $server->serve();
+    }
+}
+  ```
+
+##### 方法二：
+* 安装包: `composer require pengxuxu/hyperf-easywechat6`
+  > 包里已替换了服务端请求和缓存，并封装了公众号、微信支付、小程序等外观。
+* 参照文档在授权回调地址和其他场景中直接使用。
 </details>
--->
+

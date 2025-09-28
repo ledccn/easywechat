@@ -7,13 +7,10 @@ namespace EasyWeChat\OfficialAccount;
 use Closure;
 use EasyWeChat\Kernel\Contracts\Server as ServerInterface;
 use EasyWeChat\Kernel\Encryptor;
-use EasyWeChat\Kernel\Exceptions\BadRequestException;
-use EasyWeChat\Kernel\Exceptions\InvalidArgumentException;
-use EasyWeChat\Kernel\Exceptions\RuntimeException;
-use EasyWeChat\Kernel\HttpClient\RequestUtil;
 use EasyWeChat\Kernel\ServerResponse;
 use EasyWeChat\Kernel\Traits\DecryptXmlMessage;
 use EasyWeChat\Kernel\Traits\InteractWithHandlers;
+use EasyWeChat\Kernel\Traits\InteractWithServerRequest;
 use EasyWeChat\Kernel\Traits\RespondXmlMessage;
 use Nyholm\Psr7\Response;
 use Psr\Http\Message\ResponseInterface;
@@ -24,33 +21,24 @@ class Server implements ServerInterface
 {
     use DecryptXmlMessage;
     use InteractWithHandlers;
+    use InteractWithServerRequest;
     use RespondXmlMessage;
 
-    protected ServerRequestInterface $request;
-
-    /**
-     * @throws Throwable
-     */
     public function __construct(
         ?ServerRequestInterface $request = null,
         protected ?Encryptor $encryptor = null,
     ) {
-        $this->request = $request ?? RequestUtil::createDefaultServerRequest();
+        $this->request = $request;
     }
 
-    /**
-     * @throws InvalidArgumentException
-     * @throws BadRequestException
-     * @throws RuntimeException
-     */
     public function serve(): ResponseInterface
     {
-        if ($str = $this->request->getQueryParams()['echostr'] ?? '') {
+        if ($str = $this->getRequest()->getQueryParams()['echostr'] ?? '') {
             return new Response(200, [], $str);
         }
 
-        $message = $this->getRequestMessage($this->request);
-        $query = $this->request->getQueryParams();
+        $message = $this->getRequestMessage($this->getRequest());
+        $query = $this->getRequest()->getQueryParams();
 
         if ($this->encryptor && ! empty($query['msg_signature'])) {
             $this->prepend($this->decryptRequestMessage($query));
@@ -80,9 +68,6 @@ class Server implements ServerInterface
         return $this;
     }
 
-    /**
-     * @throws Throwable
-     */
     public function addEventListener(string $event, callable|string $handler): static
     {
         $handler = $this->makeClosure($handler);
@@ -119,21 +104,14 @@ class Server implements ServerInterface
         };
     }
 
-    /**
-     * @throws BadRequestException
-     */
     public function getRequestMessage(?ServerRequestInterface $request = null): \EasyWeChat\Kernel\Message
     {
-        return Message::createFromRequest($request ?? $this->request);
+        return Message::createFromRequest($request ?? $this->getRequest());
     }
 
-    /**
-     * @throws BadRequestException
-     * @throws RuntimeException
-     */
     public function getDecryptedMessage(?ServerRequestInterface $request = null): \EasyWeChat\Kernel\Message
     {
-        $request = $request ?? $this->request;
+        $request = $request ?? $this->getRequest();
         $message = $this->getRequestMessage($request);
         $query = $request->getQueryParams();
 

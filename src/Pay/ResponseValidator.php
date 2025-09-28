@@ -11,13 +11,12 @@ use Psr\Http\Message\ResponseInterface as PsrResponse;
 
 class ResponseValidator implements \EasyWeChat\Pay\Contracts\ResponseValidator
 {
-    public function __construct(protected MerchantInterface $merchant) {}
+    public function __construct(protected MerchantInterface $merchant)
+    {
+    }
 
     /**
-     * @throws \EasyWeChat\Kernel\Exceptions\BadResponseException
-     * @throws \EasyWeChat\Kernel\Exceptions\InvalidConfigException
-     * @throws \EasyWeChat\Pay\Exceptions\InvalidSignatureException
-     * @throws \Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface
+     * @throws BadResponseException
      */
     public function validate(PsrResponse|HttpClientResponse $response): void
     {

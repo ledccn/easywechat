@@ -18,13 +18,16 @@ use function urldecode;
 
 class LegacySignature
 {
-    public function __construct(protected MerchantInterface $merchant) {}
+    public function __construct(protected MerchantInterface $merchant)
+    {
+    }
 
     /**
      * @param  array<string, mixed>  $params
      * @return array<string, mixed>
      *
-     * @throws \Exception
+     * @throws InvalidConfigException
+     * @throws RuntimeException
      */
     public function sign(array $params): array
     {
@@ -38,7 +41,9 @@ class LegacySignature
                     'sub_appid' => $params['sub_appid'] ?? null,
                 ],
                 $params
-            )
+            ),
+            static fn ($value, $key) => ! ($key === 'sign' || $value === '' || is_null($value)),
+            ARRAY_FILTER_USE_BOTH
         );
 
         ksort($attributes);

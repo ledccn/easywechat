@@ -4,9 +4,11 @@ name: Deploy
 
 # Controls when the workflow will run
 on:
-  # Triggers the workflow on push or pull request events but only for the 6.x branch
+  # Triggers the workflow on push event but only for the 6.x branch(required the secrets environment)
   push:
     branches: [ 6.x ]
+    tags-ignore:
+      - '*'
   pull_request:
     branches: [ 6.x ]
 
@@ -28,27 +30,43 @@ jobs:
       region: ap-guangzhou
       bucket: "easywechat-1252049834"
       ignore: "./.git*,*.DS_Store"
+      COS_SECRET_ID: ${{ secrets.COS_SECRET_ID }}
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v3
-      - uses: pnpm/action-setup@v2.1.0
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
         with:
-          version: 6.0.2
-          run_install: true
-      - name: Build 
-        run: cd docs && pnpm run build
+          version: 10
+          run_install: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '>=22.12.0'
+          cache: 'pnpm'
+          cache-dependency-path: 'docs/pnpm-lock.yaml'
+      - name: Install dependencies
+        run: |
+          cd docs
+          pnpm install
+      - name: Build
+        run: |
+          cd docs
+          patch -p1 -i .vitepress/vitepress+1.6.3.patch
+          pnpm run build
       - name: Install coscmd
+        if: env.COS_SECRET_ID
         run: |
           python -m pip install --upgrade pip
-          python -m pip install setuptools coscmd tccli
+          python -m pip install setuptools
+          python -m pip install https://github.com/tencentyun/coscmd/archive/refs/heads/master.zip
       - name: Upload to cos
+        if: env.COS_SECRET_ID
         run: |
           coscmd config -a "${{secrets.COS_SECRET_ID}}" -s "${{secrets.COS_SECRET_KEY}}" -b $bucket -r $region -m $thread 
           coscmd upload -r -s $local_dir $remote_dir --ignore "$ignore"
       - name: Refresh CDN
-        run: |
-          tccli configure set secretId "${{secrets.COS_SECRET_ID}}"
-          tccli configure set secretKey "${{secrets.COS_SECRET_KEY}}"
-          tccli cdn PurgePathCache --cli-unfold-argument --Paths $domain --FlushType flush
+        if: env.COS_SECRET_ID
+        env:
+          COS_SECRET_KEY: ${{secrets.COS_SECRET_KEY}}
+        run: ./docs/purge-caches

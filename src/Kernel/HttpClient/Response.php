@@ -19,11 +19,6 @@ use Psr\Http\Message\StreamFactoryInterface;
 use Symfony\Component\HttpClient\Response\MockResponse;
 use Symfony\Component\HttpClient\Response\StreamableInterface;
 use Symfony\Component\HttpClient\Response\StreamWrapper;
-use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
-use Symfony\Contracts\HttpClient\Exception\DecodingExceptionInterface;
-use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
-use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
-use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 use Symfony\Contracts\HttpClient\ResponseInterface;
 use Throwable;
 
@@ -47,7 +42,8 @@ class Response implements Arrayable, ArrayAccess, Jsonable, ResponseInterface, S
         protected ResponseInterface $response,
         protected ?Closure $failureJudge = null,
         protected bool $throw = true
-    ) {}
+    ) {
+    }
 
     public function throw(bool $throw = true): static
     {
@@ -73,23 +69,11 @@ class Response implements Arrayable, ArrayAccess, Jsonable, ResponseInterface, S
         return $this;
     }
 
-    /**
-     * @throws TransportExceptionInterface
-     * @throws ServerExceptionInterface
-     * @throws RedirectionExceptionInterface
-     * @throws ClientExceptionInterface
-     */
     public function isSuccessful(): bool
     {
         return ! $this->isFailed();
     }
 
-    /**
-     * @throws TransportExceptionInterface
-     * @throws ServerExceptionInterface
-     * @throws RedirectionExceptionInterface
-     * @throws ClientExceptionInterface
-     */
     public function isFailed(): bool
     {
         if ($this->is('text') && $this->failureJudge) {
@@ -104,11 +88,6 @@ class Response implements Arrayable, ArrayAccess, Jsonable, ResponseInterface, S
     }
 
     /**
-     * @throws TransportExceptionInterface
-     * @throws ServerExceptionInterface
-     * @throws RedirectionExceptionInterface
-     * @throws DecodingExceptionInterface
-     * @throws ClientExceptionInterface
      * @throws BadResponseException
      */
     public function toArray(?bool $throw = null): array
@@ -134,14 +113,6 @@ class Response implements Arrayable, ArrayAccess, Jsonable, ResponseInterface, S
         return $this->response->toArray($throw);
     }
 
-    /**
-     * @throws TransportExceptionInterface
-     * @throws ServerExceptionInterface
-     * @throws RedirectionExceptionInterface
-     * @throws DecodingExceptionInterface
-     * @throws ClientExceptionInterface
-     * @throws BadResponseException
-     */
     public function toJson(?bool $throw = null): string|false
     {
         return json_encode($this->toArray($throw), JSON_UNESCAPED_UNICODE);
@@ -149,6 +120,8 @@ class Response implements Arrayable, ArrayAccess, Jsonable, ResponseInterface, S
 
     /**
      * {@inheritdoc}
+     *
+     * @throws BadMethodCallException
      */
     public function toStream(?bool $throw = null)
     {
@@ -164,10 +137,7 @@ class Response implements Arrayable, ArrayAccess, Jsonable, ResponseInterface, S
     }
 
     /**
-     * @throws TransportExceptionInterface
-     * @throws ServerExceptionInterface
-     * @throws RedirectionExceptionInterface
-     * @throws ClientExceptionInterface
+     * @throws \LogicException
      */
     public function toDataUrl(): string
     {
@@ -213,10 +183,6 @@ class Response implements Arrayable, ArrayAccess, Jsonable, ResponseInterface, S
     }
 
     /**
-     * @throws ClientExceptionInterface
-     * @throws RedirectionExceptionInterface
-     * @throws ServerExceptionInterface
-     * @throws TransportExceptionInterface
      * @throws BadResponseException
      */
     public function saveAs(string $filename): string
@@ -234,27 +200,11 @@ class Response implements Arrayable, ArrayAccess, Jsonable, ResponseInterface, S
         return '';
     }
 
-    /**
-     * @throws TransportExceptionInterface
-     * @throws ServerExceptionInterface
-     * @throws RedirectionExceptionInterface
-     * @throws DecodingExceptionInterface
-     * @throws ClientExceptionInterface
-     * @throws BadResponseException
-     */
     public function offsetExists(mixed $offset): bool
     {
         return array_key_exists($offset, $this->toArray());
     }
 
-    /**
-     * @throws TransportExceptionInterface
-     * @throws ServerExceptionInterface
-     * @throws RedirectionExceptionInterface
-     * @throws DecodingExceptionInterface
-     * @throws ClientExceptionInterface
-     * @throws BadResponseException
-     */
     public function offsetGet(mixed $offset): mixed
     {
         return $this->toArray()[$offset] ?? null;
@@ -309,25 +259,11 @@ class Response implements Arrayable, ArrayAccess, Jsonable, ResponseInterface, S
         return $this->response->getInfo($type);
     }
 
-    /**
-     * @throws TransportExceptionInterface
-     * @throws ServerExceptionInterface
-     * @throws RedirectionExceptionInterface
-     * @throws DecodingExceptionInterface
-     * @throws ClientExceptionInterface
-     * @throws BadResponseException
-     */
     public function __toString(): string
     {
         return $this->toJson() ?: '';
     }
 
-    /**
-     * @throws TransportExceptionInterface
-     * @throws ServerExceptionInterface
-     * @throws RedirectionExceptionInterface
-     * @throws ClientExceptionInterface
-     */
     public function hasHeader(string $name, ?bool $throw = null): bool
     {
         return isset($this->getHeaders($throw)[$name]);
@@ -335,11 +271,6 @@ class Response implements Arrayable, ArrayAccess, Jsonable, ResponseInterface, S
 
     /**
      * @return array<array-key, mixed>
-     *
-     * @throws TransportExceptionInterface
-     * @throws ServerExceptionInterface
-     * @throws RedirectionExceptionInterface
-     * @throws ClientExceptionInterface
      */
     public function getHeader(string $name, ?bool $throw = null): array
     {
@@ -349,12 +280,6 @@ class Response implements Arrayable, ArrayAccess, Jsonable, ResponseInterface, S
         return $this->hasHeader($name, $throw) ? $this->getHeaders($throw)[$name] : [];
     }
 
-    /**
-     * @throws TransportExceptionInterface
-     * @throws ServerExceptionInterface
-     * @throws RedirectionExceptionInterface
-     * @throws ClientExceptionInterface
-     */
     public function getHeaderLine(string $name, ?bool $throw = null): string
     {
         $name = strtolower($name);
@@ -363,12 +288,6 @@ class Response implements Arrayable, ArrayAccess, Jsonable, ResponseInterface, S
         return $this->hasHeader($name, $throw) ? implode(',', $this->getHeader($name, $throw)) : '';
     }
 
-    /**
-     * @throws TransportExceptionInterface
-     * @throws ServerExceptionInterface
-     * @throws RedirectionExceptionInterface
-     * @throws ClientExceptionInterface
-     */
     public function is(string $type): bool
     {
         $contentType = $this->getHeaderLine('content-type');

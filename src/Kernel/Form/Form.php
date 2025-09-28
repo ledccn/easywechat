@@ -11,7 +11,9 @@ class Form
     /**
      * @param  array<string|array|DataPart>  $fields
      */
-    public function __construct(protected array $fields) {}
+    public function __construct(protected array $fields)
+    {
+    }
 
     /**
      * @param  array<string|array|DataPart>  $fields
@@ -22,7 +24,7 @@ class Form
     }
 
     /**
-     * @return array<string,mixed>
+     * @return array{headers:array<string,string|string[]>,body:string}
      */
     #[ArrayShape(['headers' => 'array', 'body' => 'string'])]
     public function toArray(): array
@@ -31,7 +33,7 @@ class Form
     }
 
     /**
-     * @return array<string,mixed>
+     * @return array{headers:array<string,string|string[]>,body:string}
      */
     #[ArrayShape(['headers' => 'array', 'body' => 'string'])]
     public function toOptions(): array

@@ -4,9 +4,9 @@
 
 ## 官方文档
 
-- [基础下单支付结果通知文档](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_1_5.shtml)
-- [合单支付结果通知文档](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter5_1_13.shtml)
-- [退款结果通知文档](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_1_11.shtml)
+- [基础下单支付结果通知文档](https://pay.weixin.qq.com/doc/v3/merchant/4012284311)
+- [合单支付结果通知文档](https://pay.weixin.qq.com/doc/v3/partner/4012237246)
+- [退款结果通知文档](https://pay.weixin.qq.com/doc/v3/merchant/4012791865)
 
 ## 内置事件处理器
 
@@ -20,7 +20,7 @@ SDK 内置了两个便捷方法以便于开发者快速处理支付推送事件�
 
 🚨 切记：推送信息不一定靠谱，可能是伪造的，所以拿到推送通知，只取订单号等必要信息，其它信息忽略，拿订单号重新查询微信支付订单的最新状态再做处理。
 
-> :book: 官方文档：支付结果通知 <https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_1_5.shtml>
+> :book: [官方文档：支付结果通知](https://pay.weixin.qq.com/doc/v3/merchant/4012284311)
 
 ```php
 $server = $app->getServer();
@@ -38,7 +38,7 @@ return $server->serve();
 
 ### 退款成功事件
 
-> :book: 官方文档：退款结果通知 <https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_1_11.shtml>
+> :book: [官方文档：退款结果通知](https://pay.weixin.qq.com/doc/v3/merchant/4012791865)
 
 ```php
 $server = $app->getServer();
@@ -52,9 +52,9 @@ $server->handleRefunded(function (Message $message, \Closure $next) {
 return $server->serve();
 ```
 
-🚨 注意：经网友发现官方仍存在[使用 v2 模式的退款推送](https://pay.weixin.qq.com/wiki/doc/api/jsapi.php?chapter=9_16&index=10)，所以如果你的退款逻辑有异常，请参考以下方式实现（需要配置 v2 API key）：
+🚨 注意：经网友发现官方仍存在[使用 v2 模式的退款推送](https://pay.weixin.qq.com/doc/v2/merchant/4011985425)，所以如果你的退款逻辑有异常，请参考以下方式实现（需要配置 v2 API key）：
 
-> 网友反馈的问题：https://github.com/w7corp/easywechat/issues/2737
+> 网友反馈的[问题：#2737](https://github.com/w7corp/easywechat/issues/2737)
 > 目前已知的情况是：微信商户平台填写的 API 回调地址，然后在商户平台手动处理退款的。
 
 ```php
@@ -62,8 +62,8 @@ return $server->serve();
 $server = $app->getServer();
 
 // 推送消息，已解密
-// 结构参考：https://pay.weixin.qq.com/wiki/doc/api/jsapi.php?chapter=9_16&index=10
-$message = $server->getReqeustMessage();
+// 结构参考：https://pay.weixin.qq.com/doc/v2/merchant/4011985425
+$message = $server->getRequestMessage();
 
 // 你的逻辑...
 
@@ -103,7 +103,7 @@ $message = $server->getRequestMessage();
 
 ## 回调消息
 
-微信推送的回调消息是默认密文的，可[参考文档](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_1_5.shtml)，但是 SDK 已经帮你解密好了，所以以上例子中的 `$message` 默认访问的属性都是明文的，例如：
+微信推送的回调消息是默认密文的，可参考[文档](https://pay.weixin.qq.com/doc/v3/merchant/4012071382)，但是 SDK 已经帮你解密好了，所以以上例子中的 `$message` 默认访问的属性都是明文的，例如：
 
 ```json
 {

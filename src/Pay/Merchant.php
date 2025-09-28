@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace EasyWeChat\Pay;
 
 use EasyWeChat\Kernel\Exceptions\InvalidArgumentException;
-use EasyWeChat\Kernel\Exceptions\InvalidConfigException;
 use EasyWeChat\Kernel\Support\PrivateKey;
 use EasyWeChat\Kernel\Support\PublicKey;
 use EasyWeChat\Pay\Contracts\Merchant as MerchantInterface;
@@ -23,9 +22,6 @@ class Merchant implements MerchantInterface
 
     /**
      * @param  array<int|string, string|PublicKey>  $platformCerts
-     *
-     * @throws InvalidArgumentException
-     * @throws InvalidConfigException
      */
     public function __construct(
         protected int|string $mchId,
@@ -68,12 +64,16 @@ class Merchant implements MerchantInterface
         return $this->platformCerts[$serial] ?? null;
     }
 
+    public function getPlatformCerts(): array
+    {
+        return $this->platformCerts;
+    }
+
     /**
-     * @param  array<array-key, string|PublicKey>  $platformCerts
+     * @param  array<array-key, mixed>  $platformCerts
      * @return array<string, PublicKey>
      *
      * @throws InvalidArgumentException
-     * @throws InvalidConfigException
      */
     protected function normalizePlatformCerts(array $platformCerts): array
     {
